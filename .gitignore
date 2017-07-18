@@ -1,0 +1,10 @@
+hooks/
+node_modules/
+platforms/
+plugins/
+res/
+img/
+.sass-cache/
+.npmignore
+config.xml
+theme.css.map

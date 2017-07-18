@@ -1,0 +1,39 @@
+@import 'variable';
+
+#map-frame {
+    position: absolute;
+    background: colors(colorLight);
+    height: 100%;
+    top: 0;
+
+    left: 0;
+    width: 100%;
+    @media screen and (min-width: $breakpoint-width) {
+        left: 30%;
+        width: 70%;
+    }
+}
+
+#drawer-frame {
+    position: absolute;
+    background: colors(colorLight);
+    height: 100%;
+    top: 0;
+
+    left: -$drawer-width;
+    width: $drawer-width;
+    @media screen and (min-width: $breakpoint-width) {
+        left: 0;
+        width: 30%;
+    }
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+
+

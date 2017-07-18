@@ -1,0 +1,29 @@
+@import 'variable';
+
+* { margin: 0; }
+
+html, body {
+    position: relative;
+    height: 100%;
+}
+
+.content-frame {
+    position: absolute;
+    width: 100%;
+
+    height: 100%;
+    bottom: 60px;
+
+    background: colors(colorLight);
+
+};
+
+.ad-frame {
+    position: absolute;
+    width: 100%;
+    bottom: 0;
+    
+    height: 60px;
+    background: colors(adFrameGray);
+};
+
