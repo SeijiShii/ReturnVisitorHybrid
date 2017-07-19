@@ -32,24 +32,28 @@ var MapPage = (function () {
                 'mapType': plugin.google.maps.MapTypeId.HYBRID,
                 'controls': {
                     'compass': true,
-                    'myLocationButton': true,
-                    'indoorPicker': true,
-                    'zoom': true
-                },
-                'gestures': {
-                    'scroll': true,
-                    'tilt': true,
-                    'rotate': true,
-                    'zoom': true
-                },
-                'camera': {
-                    'target': [
-                        { lat: -34.397, lng: 150.644 }
-                    ]
+                    'zoom': true,
+                    'myLocationButton': true
                 }
             });
             _this.pluginMap.one(plugin.google.maps.event.MAP_READY, function () {
                 console.log("--> map : ready.");
+                var location = _this.pluginMap.getMyLocation({
+                    enableHighAccuracy: true
+                }, function (result) {
+                    console.dir(JSON.stringify(result));
+                    _this.pluginMap.setOptions({
+                        'camera': {
+                            'target': {
+                                lat: result.latLng.lat,
+                                lng: result.latLng.lng
+                            },
+                            'zoom': 18
+                        }
+                    });
+                }, function (err_msg) {
+                    console.log(JSON.stringify(err_msg));
+                });
             });
         };
     }

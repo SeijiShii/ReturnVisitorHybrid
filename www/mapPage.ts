@@ -36,28 +36,36 @@ class MapPage {
 
     initPluginMap = () => {
         var mapDiv = document.getElementById('map');
-        this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, {
-            'mapType': plugin.google.maps.MapTypeId.HYBRID,
-            'controls': {
-            'compass': true,
-                'myLocationButton': true, // you can specify this option, but app asks permission when it launches.
-                'indoorPicker': true,
-                'zoom': true
-            },
-            'gestures': {
-                'scroll': true,
-                'tilt': true,
-                'rotate': true,
-                'zoom': true
-            },
-            'camera': {
-                'target':[
-                    {lat: -34.397, lng: 150.644}
-                ]
-            }
+        this.pluginMap = plugin.google.maps.Map.getMap(mapDiv,{
+             'mapType': plugin.google.maps.MapTypeId.HYBRID,
+                    'controls': {
+                        'compass' : true,
+                        'zoom': true,
+                        'myLocationButton': true
+                    },
         });
+        
         this.pluginMap.one(plugin.google.maps.event.MAP_READY, () => {
             console.log("--> map : ready.");
+            let location = this.pluginMap.getMyLocation({
+                enableHighAccuracy : true
+            }, (result) => {
+                console.dir(JSON.stringify(result));
+
+                this.pluginMap.setOptions({
+                    'camera' : {
+                        'target' : {
+                            lat: result.latLng.lat,
+                            lng: result.latLng.lng
+                        },
+                        'zoom' : 18
+                    }
+                });
+
+            }, (err_msg) => {
+                console.log(JSON.stringify(err_msg));
+            });
+
         });
     }
 }
