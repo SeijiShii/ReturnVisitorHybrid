@@ -1,3 +1,6 @@
+var LATITUDE = 'latitude';
+var LONGTUDE = 'longitude';
+var CAMERA_ZOOM = 'camera_zoom';
 var MapPage = (function () {
     function MapPage() {
         var _this = this;
@@ -28,33 +31,79 @@ var MapPage = (function () {
         };
         this.initPluginMap = function () {
             var mapDiv = document.getElementById('map');
-            _this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, {
+            var position = _this.loadCameraPosition();
+            var option = {
                 'mapType': plugin.google.maps.MapTypeId.HYBRID,
                 'controls': {
                     'compass': true,
                     'zoom': true,
                     'myLocationButton': true
                 }
-            });
-            _this.pluginMap.one(plugin.google.maps.event.MAP_READY, function () {
-                console.log("--> map : ready.");
-                var location = _this.pluginMap.getMyLocation({
-                    enableHighAccuracy: true
-                }, function (result) {
-                    console.dir(JSON.stringify(result));
-                    _this.pluginMap.setOptions({
-                        'camera': {
-                            'target': {
-                                lat: result.latLng.lat,
-                                lng: result.latLng.lng
-                            },
-                            'zoom': 18
-                        }
+            };
+            if (position) {
+                option['camera'] = {
+                    'target': {
+                        lat: position.target.lat,
+                        lng: position.target.lng
+                    },
+                    'zoom': position.zoom
+                };
+            }
+            _this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
+            _this.pluginMap.on(plugin.google.maps.event.MAP_READY, function () {
+                if (!position) {
+                    var location_1 = _this.pluginMap.getMyLocation({
+                        enableHighAccuracy: true
+                    }, function (result) {
+                        // console.dir(JSON.stringify(result));
+                        _this.pluginMap.setOptions({
+                            'camera': {
+                                'target': {
+                                    lat: result.latLng.lat,
+                                    lng: result.latLng.lng
+                                },
+                                'zoom': 18
+                            }
+                        });
+                    }, function (err_msg) {
+                        console.log(JSON.stringify(err_msg));
                     });
-                }, function (err_msg) {
-                    console.log(JSON.stringify(err_msg));
-                });
+                }
             });
+            _this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
+                // console.log('Camera move ended.')
+                var cameraPosition = _this.pluginMap.getCameraPosition();
+                // console.log(JSON.stringify(cameraPosition.target));
+                _this.saveCameraPosition(cameraPosition);
+            });
+        };
+        this.loadCameraPosition = function () {
+            var storage = window.localStorage;
+            var lat = storage.getItem(LATITUDE);
+            if (!lat) {
+                return null;
+            }
+            var lng = storage.getItem(LONGTUDE);
+            if (!lng) {
+                return null;
+            }
+            var zoom = storage.getItem(CAMERA_ZOOM);
+            if (!zoom) {
+                return null;
+            }
+            return {
+                target: {
+                    lat: lat,
+                    lng: lng
+                },
+                zoom: zoom
+            };
+        };
+        this.saveCameraPosition = function (position) {
+            var storage = window.localStorage;
+            storage.setItem(LATITUDE, position.target.lat);
+            storage.setItem(LONGTUDE, position.target.lng);
+            storage.setItem(CAMERA_ZOOM, position.zoom);
         };
     }
     return MapPage;
