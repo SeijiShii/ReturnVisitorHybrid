@@ -1,17 +1,19 @@
-console.log('index.js called!');
+declare var device, google, plugin: any;
 
-var browserMap, pluginMap;
-var rvApp = {
+class MapPage {
 
-    initialize : function () {
+    browserMap: any; 
+    pluginMap: any; 
+
+    initialize = () => {
         console.log('initialize called!');
         document.addEventListener('deviceready', this.onDeviceReady, false);
-    },
+    }
 
-    onDeviceReady : function () {
+    onDeviceReady = () => {
         console.log('Platform: ' + device.platform);
         if (device.platform === 'iOS' || device.platform === 'Android') {
-            initPluginMap;
+            this.initPluginMap();
             
         } else {
             var script = document.createElement('script');
@@ -21,20 +23,20 @@ var rvApp = {
             // console.dir(document.body);
             document.body.appendChild(script);
         }
-    }, 
+    }
 
-    initBrowserMap : function() {
-        browserMap = new google.maps.Map(document.getElementById('map'), {
+    initBrowserMap = () => {
+        this.browserMap = new google.maps.Map(document.getElementById('map'), {
             center: {lat: -34.397, lng: 150.644},
             zoom: 8,
             mapTypeId: 'hybrid',
             streetViewControl: false	
         });
-    },
+    }
 
-    initPluginMap : function() {
+    initPluginMap = () => {
         var mapDiv = document.getElementById('map');
-        pluginMap = plugin.google.maps.Map.getMap(mapDiv, {
+        this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, {
             'mapType': plugin.google.maps.MapTypeId.HYBRID,
             'controls': {
             'compass': true,
@@ -54,11 +56,10 @@ var rvApp = {
                 ]
             }
         });
-        pluginMap.one(plugin.google.maps.event.MAP_READY, function () {
+        this.pluginMap.one(plugin.google.maps.event.MAP_READY, () => {
             console.log("--> map : ready.");
         });
     }
 }
 
-rvApp.initialize();
-
+new MapPage().initialize();
