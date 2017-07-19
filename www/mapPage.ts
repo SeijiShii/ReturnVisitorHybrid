@@ -6,12 +6,21 @@ declare var device, google, plugin: any;
 
 class MapPage {
 
-    browserMap: any; 
-    pluginMap: any; 
+    static browserMap: any; 
+    static pluginMap: any; 
 
     initialize = () => {
         console.log('initialize called!');
         document.addEventListener('deviceready', this.onDeviceReady, false);
+    }
+
+    static initBrowserMap() {
+        MapPage.browserMap = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: -34.397, lng: 150.644},
+            zoom: 8,
+            mapTypeId: 'hybrid',
+            streetViewControl: false	
+        });
     }
 
     onDeviceReady = () => {
@@ -22,20 +31,11 @@ class MapPage {
         } else {
             var script = document.createElement('script');
             script.type = 'text/javascript';
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=initBrowserMap';
+            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=MapPage.initBrowserMap';
             
             // console.dir(document.body);
             document.body.appendChild(script);
         }
-    }
-
-    initBrowserMap = () => {
-        this.browserMap = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: -34.397, lng: 150.644},
-            zoom: 8,
-            mapTypeId: 'hybrid',
-            streetViewControl: false	
-        });
     }
 
     initPluginMap = () => {
@@ -60,18 +60,18 @@ class MapPage {
             }
         }
 
-        this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
+        MapPage.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
         
         
-        this.pluginMap.on(plugin.google.maps.event.MAP_READY, () => {
+        MapPage.pluginMap.on(plugin.google.maps.event.MAP_READY, () => {
 
             if (!position) {
-                            let location = this.pluginMap.getMyLocation({
+                    let location = MapPage.pluginMap.getMyLocation({
                     enableHighAccuracy : true
                 }, (result) => {
                     // console.dir(JSON.stringify(result));
 
-                    this.pluginMap.setOptions({
+                    MapPage.pluginMap.setOptions({
                         'camera' : {
                             'target' : {
                                 lat: result.latLng.lat,
@@ -87,9 +87,9 @@ class MapPage {
             }
         });
 
-        this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, () =>{
+        MapPage.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, () =>{
             // console.log('Camera move ended.')
-            let cameraPosition = this.pluginMap.getCameraPosition();
+            let cameraPosition = MapPage.pluginMap.getCameraPosition();
             // console.log(JSON.stringify(cameraPosition.target));
             this.saveCameraPosition(cameraPosition);
             

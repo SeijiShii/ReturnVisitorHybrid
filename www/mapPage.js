@@ -16,18 +16,10 @@ var MapPage = (function () {
             else {
                 var script = document.createElement('script');
                 script.type = 'text/javascript';
-                script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=initBrowserMap';
+                script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=MapPage.initBrowserMap';
                 // console.dir(document.body);
                 document.body.appendChild(script);
             }
-        };
-        this.initBrowserMap = function () {
-            _this.browserMap = new google.maps.Map(document.getElementById('map'), {
-                center: { lat: -34.397, lng: 150.644 },
-                zoom: 8,
-                mapTypeId: 'hybrid',
-                streetViewControl: false
-            });
         };
         this.initPluginMap = function () {
             var mapDiv = document.getElementById('map');
@@ -49,14 +41,14 @@ var MapPage = (function () {
                     'zoom': position.zoom
                 };
             }
-            _this.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
-            _this.pluginMap.on(plugin.google.maps.event.MAP_READY, function () {
+            MapPage.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
+            MapPage.pluginMap.on(plugin.google.maps.event.MAP_READY, function () {
                 if (!position) {
-                    var location_1 = _this.pluginMap.getMyLocation({
+                    var location_1 = MapPage.pluginMap.getMyLocation({
                         enableHighAccuracy: true
                     }, function (result) {
                         // console.dir(JSON.stringify(result));
-                        _this.pluginMap.setOptions({
+                        MapPage.pluginMap.setOptions({
                             'camera': {
                                 'target': {
                                     lat: result.latLng.lat,
@@ -70,9 +62,9 @@ var MapPage = (function () {
                     });
                 }
             });
-            _this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
+            MapPage.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
                 // console.log('Camera move ended.')
-                var cameraPosition = _this.pluginMap.getCameraPosition();
+                var cameraPosition = MapPage.pluginMap.getCameraPosition();
                 // console.log(JSON.stringify(cameraPosition.target));
                 _this.saveCameraPosition(cameraPosition);
             });
@@ -106,6 +98,14 @@ var MapPage = (function () {
             storage.setItem(CAMERA_ZOOM, position.zoom);
         };
     }
+    MapPage.initBrowserMap = function () {
+        MapPage.browserMap = new google.maps.Map(document.getElementById('map'), {
+            center: { lat: -34.397, lng: 150.644 },
+            zoom: 8,
+            mapTypeId: 'hybrid',
+            streetViewControl: false
+        });
+    };
     return MapPage;
 }());
 new MapPage().initialize();
