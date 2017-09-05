@@ -3,43 +3,47 @@ const LONGTUDE: string = 'longitude';
 const CAMERA_ZOOM: string = 'camera_zoom';
 
 declare var device, google, plugin: any;
+var contentHeight: number;
 
 class MapPage {
 
     static browserMap: any; 
     static pluginMap: any; 
+    
 
     initialize = () => {
         console.log('initialize called!');
         document.addEventListener('deviceready', this.onDeviceReady, false);
     }
 
-    static initBrowserMap() {
-        MapPage.browserMap = new google.maps.Map(document.getElementById('map'), {
-            center: {lat: -34.397, lng: 150.644},
-            zoom: 8,
-            mapTypeId: 'hybrid',
-            streetViewControl: false	
-        });
-    }
-
     onDeviceReady = () => {
         console.log('Platform: ' + device.platform);
-        if (device.platform === 'iOS' || device.platform === 'Android') {
-            this.initPluginMap();
-            
-        } else {
-            var script = document.createElement('script');
-            script.type = 'text/javascript';
-            script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=MapPage.initBrowserMap';
-            
-            // console.dir(document.body);
-            document.body.appendChild(script);
-        }
+
+        this.initContentHeight();
+        this.initMapHeight();
+        this.initPluginMap();
+    }
+
+    
+    initContentHeight = () => {
+        let contentFrame = document.getElementById('content-frame');
+        // console.log('window.innerHeight(): ' + window.innerHeight);
+        contentHeight = window.innerHeight - 50;
+        console.log('content height: ' + contentHeight + 'px');
+        contentFrame.style.height = contentHeight.toString() + 'px'; 
+    }
+
+    initMapHeight = () => {
+        let mapFrame = document.getElementById('map-frame');
+        mapFrame.style.height = contentHeight.toString() + 'px';
+        console.log('map frame height: ' + mapFrame.style.height);
     }
 
     initPluginMap = () => {
         var mapDiv = document.getElementById('map');
+        mapDiv.style.height = contentHeight.toString() + 'px';
+        // mapDiv.style.height = '100px';
+        console.log('map div height: ' + mapDiv.style.height);
 
         let position = this.loadCameraPosition();
         let option = {

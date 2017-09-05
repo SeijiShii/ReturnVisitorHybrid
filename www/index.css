@@ -1,38 +1,30 @@
 #map-frame {
   position: absolute;
-  background: #dadaf0;
-  height: 100%;
+  background: #eee;
   top: 0;
   left: 0;
-  width: 100%;
-}
-@media screen and (min-width: 640px) {
-  #map-frame {
-    left: 30%;
-    width: 70%;
-  }
-}
+  width: 100%; }
+  @media screen and (min-width: 400px) {
+    #map-frame {
+      left: 30%;
+      width: 70%; } }
 
 #drawer-frame {
   position: absolute;
-  background: #dadaf0;
+  background: #eee;
   height: 100%;
   top: 0;
   left: -240px;
-  width: 240px;
-}
-@media screen and (min-width: 640px) {
-  #drawer-frame {
-    left: 0;
-    width: 30%;
-  }
-}
+  width: 240px; }
+  @media screen and (min-width: 400px) {
+    #drawer-frame {
+      left: 0;
+      width: 30%; } }
 
 #map {
   width: 100%;
   height: 100%;
   top: 0;
-  left: 0;
-}
+  left: 0; }
 
 /*# sourceMappingURL=index.css.map */

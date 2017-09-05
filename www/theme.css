@@ -1,26 +1,20 @@
 * {
-  margin: 0;
-}
+  margin: 0; }
 
 html, body {
   position: relative;
-  height: 100%;
-}
+  height: 100%; }
 
-.content-frame {
+#content-frame {
   position: absolute;
   width: 100%;
-  height: 100%;
-  bottom: 60px;
-  background: #dadaf0;
-}
+  background: #eee; }
 
-.ad-frame {
+#ad-frame {
   position: absolute;
   width: 100%;
   bottom: 0;
-  height: 60px;
-  background: #555;
-}
+  height: 50px;
+  background: #555; }
 
 /*# sourceMappingURL=theme.css.map */

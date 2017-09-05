@@ -1,6 +1,7 @@
 var LATITUDE = 'latitude';
 var LONGTUDE = 'longitude';
 var CAMERA_ZOOM = 'camera_zoom';
+var contentHeight;
 var MapPage = (function () {
     function MapPage() {
         var _this = this;
@@ -10,19 +11,27 @@ var MapPage = (function () {
         };
         this.onDeviceReady = function () {
             console.log('Platform: ' + device.platform);
-            if (device.platform === 'iOS' || device.platform === 'Android') {
-                _this.initPluginMap();
-            }
-            else {
-                var script = document.createElement('script');
-                script.type = 'text/javascript';
-                script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDmr4KjAGEvMjcmDdR7G6LdBIutoAAA2Yo&callback=MapPage.initBrowserMap';
-                // console.dir(document.body);
-                document.body.appendChild(script);
-            }
+            _this.initContentHeight();
+            _this.initMapHeight();
+            _this.initPluginMap();
+        };
+        this.initContentHeight = function () {
+            var contentFrame = document.getElementById('content-frame');
+            // console.log('window.innerHeight(): ' + window.innerHeight);
+            contentHeight = window.innerHeight - 50;
+            console.log('content height: ' + contentHeight + 'px');
+            contentFrame.style.height = contentHeight.toString() + 'px';
+        };
+        this.initMapHeight = function () {
+            var mapFrame = document.getElementById('map-frame');
+            mapFrame.style.height = contentHeight.toString() + 'px';
+            console.log('map frame height: ' + mapFrame.style.height);
         };
         this.initPluginMap = function () {
             var mapDiv = document.getElementById('map');
+            mapDiv.style.height = contentHeight.toString() + 'px';
+            // mapDiv.style.height = '100px';
+            console.log('map div height: ' + mapDiv.style.height);
             var position = _this.loadCameraPosition();
             var option = {
                 'mapType': plugin.google.maps.MapTypeId.HYBRID,
@@ -98,14 +107,6 @@ var MapPage = (function () {
             storage.setItem(CAMERA_ZOOM, position.zoom);
         };
     }
-    MapPage.initBrowserMap = function () {
-        MapPage.browserMap = new google.maps.Map(document.getElementById('map'), {
-            center: { lat: -34.397, lng: 150.644 },
-            zoom: 8,
-            mapTypeId: 'hybrid',
-            streetViewControl: false
-        });
-    };
     return MapPage;
 }());
 new MapPage().initialize();

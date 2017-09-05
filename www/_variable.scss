@@ -8,12 +8,12 @@ $colors: (
     studyPurple:#e246c1,
     timeOrange:#eca400,
     adFrameGray:#555,
-    colorLight:#dadaf0,
+    colorLight:#eee,
 );
 
 @function colors($key) {
     @return map-get($colors, $key)
 };
 
-$breakpoint-width: 640px; // Larger than this, means tablet or PC
+$breakpoint-width: 400px; // Larger than this, means tablet or PC
 $drawer-width: 240px;
