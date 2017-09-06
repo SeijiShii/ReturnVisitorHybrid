@@ -1,3 +1,4 @@
+// 170906 次はロゴだ。
 var LATITUDE = 'latitude';
 var LONGTUDE = 'longitude';
 var CAMERA_ZOOM = 'camera_zoom';
@@ -13,7 +14,7 @@ var MapPage = (function () {
             _this.refreshContentHeight();
             _this.refreshMapFrameHeight();
             _this.initPluginMap();
-            _this.refreshMapHeight;
+            // this.refreshMapHeight();
             window.addEventListener('orientationchange', function () {
                 console.log('screen.orientation.type: ' + screen.orientation.type);
                 // 170906 
@@ -36,7 +37,7 @@ var MapPage = (function () {
                 // }
                 _this.refreshContentHeight();
                 _this.refreshMapFrameHeight();
-                _this.refreshMapHeight();
+                // this.refreshMapHeight();
             });
         };
         this.refreshContentHeight = function () {
@@ -56,12 +57,13 @@ var MapPage = (function () {
             console.log('map frame height: ' + mapFrame.style.height);
         };
         // 170906 added
-        this.refreshMapHeight = function () {
-            _this.mapDiv.style.height = _this.contentHeight.toString() + 'px';
-            // mapDiv.style.height = '100px';
-            // このコードがmapDivの高さに影響を与えているのか検証するために追加した
-            console.log('map div height: ' + _this.mapDiv.style.height);
-        };
+        // 170906 cssで指定してあるから要らなくね？ってなった。
+        // refreshMapHeight = () => {
+        //     this.mapDiv.style.height = this.contentHeight.toString() + 'px';
+        //     // mapDiv.style.height = '100px';
+        //     // このコードがmapDivの高さに影響を与えているのか検証するために追加した
+        //     console.log('map div height: ' + this.mapDiv.style.height);
+        // }
         this.initPluginMap = function () {
             _this.mapDiv = document.getElementById('map');
             var position = _this.loadCameraPosition();
@@ -71,6 +73,11 @@ var MapPage = (function () {
                     'compass': true,
                     'zoom': true,
                     'myLocationButton': true
+                },
+                'preferences': {
+                    'padding': {
+                        top: 50
+                    }
                 }
             };
             if (position) {

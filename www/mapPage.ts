@@ -1,3 +1,5 @@
+// 170906 次はロゴだ。
+
 const LATITUDE: string = 'latitude';
 const LONGTUDE: string = 'longitude';
 const CAMERA_ZOOM: string = 'camera_zoom';
@@ -27,7 +29,7 @@ class MapPage {
         this.refreshContentHeight();
         this.refreshMapFrameHeight();
         this.initPluginMap();
-        this.refreshMapHeight
+        // this.refreshMapHeight();
 
         window.addEventListener('orientationchange', () =>{
             
@@ -54,7 +56,7 @@ class MapPage {
             // }
             this.refreshContentHeight();
             this.refreshMapFrameHeight();
-            this.refreshMapHeight();
+            // this.refreshMapHeight();
         });
     }
 
@@ -78,12 +80,13 @@ class MapPage {
     }
 
     // 170906 added
-    refreshMapHeight = () => {
-        this.mapDiv.style.height = this.contentHeight.toString() + 'px';
-        // mapDiv.style.height = '100px';
-        // このコードがmapDivの高さに影響を与えているのか検証するために追加した
-        console.log('map div height: ' + this.mapDiv.style.height);
-    }
+    // 170906 cssで指定してあるから要らなくね？ってなった。
+    // refreshMapHeight = () => {
+    //     this.mapDiv.style.height = this.contentHeight.toString() + 'px';
+    //     // mapDiv.style.height = '100px';
+    //     // このコードがmapDivの高さに影響を与えているのか検証するために追加した
+    //     console.log('map div height: ' + this.mapDiv.style.height);
+    // }
 
     initPluginMap = () => {
         this.mapDiv = document.getElementById('map');
@@ -96,6 +99,11 @@ class MapPage {
                 'zoom': true,
                 'myLocationButton': true
             },
+            'preferences': {
+                'padding': {
+                    top: 50
+                }
+            }
         }
         if (position) {
             option['camera'] = {
