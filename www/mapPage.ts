@@ -3,12 +3,17 @@ const LONGTUDE: string = 'longitude';
 const CAMERA_ZOOM: string = 'camera_zoom';
 
 declare var device, google, plugin: any;
-var contentHeight: number;
+interface Screen {
+    orientation: any;
+}
 
 class MapPage {
 
     static browserMap: any; 
     static pluginMap: any; 
+
+    private contentHeight: number;
+    private mapDiv: any;
     
 
     initialize = () => {
@@ -19,31 +24,69 @@ class MapPage {
     onDeviceReady = () => {
         console.log('Platform: ' + device.platform);
 
-        this.initContentHeight();
-        this.initMapHeight();
+        this.refreshContentHeight();
+        this.refreshMapFrameHeight();
         this.initPluginMap();
+        this.refreshMapHeight
+
+        window.addEventListener('orientationchange', () =>{
+            
+            console.log('screen.orientation.type: ' + screen.orientation.type); 
+            // 170906 
+            // 当初、screen.orientation.typeでorientationを取得しようとすると
+            //  そのようなプロパティは存在しないと怒られる。
+            // interfaceでScreenにorientationを追加するとコンパイラの怒りが静まる。
+            // 結果  console.log('window.orientation: ' + window.orientation);で取得するのはやめる。
+            // なんでもwindow.orientationは標準化されていないとMDNに注意書きがされていた。
+
+            // 170906 以下はorientationによって切り分ける必要があるかと思って追加したが、
+            //      随時高さ計測なので現時点では不必要。
+            // switch (screen.orientation.type) {
+            //     case 'portrait-primary':
+            //     case 'portrait-secondary':
+            //         console.log('orientation: portrait')
+            //         break;
+
+            //     case 'landscape-primary':
+            //     case 'landscape-secondary':
+            //         console.log('orientation: landscape')
+            //         break;
+            // }
+            this.refreshContentHeight();
+            this.refreshMapFrameHeight();
+            this.refreshMapHeight();
+        });
     }
 
     
-    initContentHeight = () => {
+    refreshContentHeight = () => {
         let contentFrame = document.getElementById('content-frame');
         // console.log('window.innerHeight(): ' + window.innerHeight);
-        contentHeight = window.innerHeight - 50;
-        console.log('content height: ' + contentHeight + 'px');
-        contentFrame.style.height = contentHeight.toString() + 'px'; 
+        this.contentHeight = window.innerHeight - 50;
+        // 170906 当初 contentHeight = window.screen.heightで高さを取得しようとしたら
+        //   Androidでステータスバーの高さを見落としていた。
+        //   contentHeight = window.innerHeight - 50 でwebViewの高さが取得できるが、
+        //   iOSではどのような挙動になるか確認する必要がある。
+        console.log('content height: ' + this.contentHeight + 'px');
+        contentFrame.style.height = this.contentHeight.toString() + 'px'; 
     }
 
-    initMapHeight = () => {
+    refreshMapFrameHeight = () => {
         let mapFrame = document.getElementById('map-frame');
-        mapFrame.style.height = contentHeight.toString() + 'px';
+        mapFrame.style.height = this.contentHeight.toString() + 'px';
         console.log('map frame height: ' + mapFrame.style.height);
     }
 
-    initPluginMap = () => {
-        var mapDiv = document.getElementById('map');
-        mapDiv.style.height = contentHeight.toString() + 'px';
+    // 170906 added
+    refreshMapHeight = () => {
+        this.mapDiv.style.height = this.contentHeight.toString() + 'px';
         // mapDiv.style.height = '100px';
-        console.log('map div height: ' + mapDiv.style.height);
+        // このコードがmapDivの高さに影響を与えているのか検証するために追加した
+        console.log('map div height: ' + this.mapDiv.style.height);
+    }
+
+    initPluginMap = () => {
+        this.mapDiv = document.getElementById('map');
 
         let position = this.loadCameraPosition();
         let option = {
@@ -64,7 +107,7 @@ class MapPage {
             }
         }
 
-        MapPage.pluginMap = plugin.google.maps.Map.getMap(mapDiv, option);
+        MapPage.pluginMap = plugin.google.maps.Map.getMap(this.mapDiv, option);
         
         
         MapPage.pluginMap.on(plugin.google.maps.event.MAP_READY, () => {
