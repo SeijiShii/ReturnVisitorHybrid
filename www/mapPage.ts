@@ -185,6 +185,13 @@ class MapPage {
         storage.setItem(LONGTUDE, position.target.lng);
         storage.setItem(CAMERA_ZOOM, position.zoom);
     }
+
+    
 }
 
 new MapPage().initialize();
+
+const onClickLogoButton = () => {
+    console.log('Logo button clicked!');
+}
+

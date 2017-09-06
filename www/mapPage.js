@@ -149,3 +149,6 @@ var MapPage = (function () {
     return MapPage;
 }());
 new MapPage().initialize();
+var onClickLogoButton = function () {
+    console.log('Logo button clicked!');
+};
