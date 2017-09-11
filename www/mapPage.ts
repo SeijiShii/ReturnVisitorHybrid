@@ -35,7 +35,8 @@ class MapPage {
         this.refreshMapFrameHeight();
         this.initPluginMap();
         this.initLogoButton();
-        // this.refreshMapHeight();
+        this.initOverlay();
+        this.initDrawer();
 
         window.addEventListener('orientationchange', () =>{
             
@@ -52,6 +53,17 @@ class MapPage {
             this.refreshMapFrameHeight();
             // this.refreshMapHeight();
             this.fadeLogoButton(this.isPortrait(), true);
+
+            if (this.isPortrait()) {
+                if (this.isDrawerOpen) {
+                    this.openCloseDrawer(false);                    
+                }
+            } else {
+                if (this.isDrawerOpen) {
+                    // ドロワの開いた状態で画面が回転した。
+                    this.refreshOverlay(false);
+                }
+            }
         });
     }
 
@@ -186,10 +198,10 @@ class MapPage {
                 // 170911 JQueryが読み込まれなくて何度もテストする  
                 // console.dir($);     
 
-                $('#logo-button').fadeIn('slow');
+                $(this.logoButton).fadeIn('slow');                
             } else {
                 console.log('fadeLogoButton called: Fade out, with animate');                                
-                $('#logo-button').fadeOut('slow');
+                $(this.logoButton).fadeOut('slow');
             }
         } else {
             if (fadeIn) {
@@ -206,11 +218,73 @@ class MapPage {
         console.log('isPortrait called!')
         return screen.orientation.type === 'portrait-primary' || screen.orientation.type === 'portrait-secondary'
     }
+
+    private overlay: any;
+    private overlayOpacity: number = 0.7; 
+    private initOverlay = () => {
+        this.overlay = document.getElementById('overlay');
+        this.overlay.style.width = '0';
+    }
     
+    private refreshOverlay = (fadeIn: boolean) => {
+        console.log('Fade in overlay: ' + fadeIn);
+        if (fadeIn) {
+            console.log('this.overlay.style.opacity: ' + this.overlay.style.opacity)
+            if (this.overlay.style.opacity == 0) {
+                this.overlay.style.width = '100%';
+                $(this.overlay).fadeTo('slow', this.overlayOpacity);
+            }
+        } else {
+            if (this.overlay.style.opacity == this.overlayOpacity) {
+                $(this.overlay).fadeTo('slow', 0, () => {
+                    this.overlay.style.width = '0';
+                });
+            }
+        }
+    }
+
+    private drawer: any;
+    private isDrawerOpen: boolean;
+    private initDrawer = () => {
+        this.drawer = document.getElementById('drawer');
+        this.isDrawerOpen = false;
+    }
+
+    openCloseDrawer = (animate: boolean) => {
+        // ポートレイトの時だけ有効
+        if (this.isPortrait()) {
+
+            this.isDrawerOpen = !this.isDrawerOpen;
+            console.log('isDrawerOpen: ' + this.isDrawerOpen);
+
+            if (animate) {
+                if (this.isDrawerOpen) {
+                    $(this.drawer).animate({'left' : '0px'}, 'slow');
+                } else {
+                    $(this.drawer).animate({'left' : '-240px'}, 'slow');
+                }    
+            } else {
+                if (this.isDrawerOpen) {
+                    this.drawer.style.left = '0px';
+                } else {
+                    this.drawer.style.left = '-240px';
+                }
+            }
+            this.refreshOverlay(this.isDrawerOpen);
+        }
+    }
+
 }
 
 const onClickLogoButton = () => {
     console.log('Logo button clicked!');
+    mapPage.openCloseDrawer(true);
 }
 
-new MapPage().initialize();
+const onClickOverlay = () => {
+    console.log('Overlay clicked!');
+    mapPage.openCloseDrawer(true);
+}
+
+const mapPage = new MapPage()
+mapPage.initialize();

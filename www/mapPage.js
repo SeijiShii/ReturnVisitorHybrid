@@ -14,11 +14,23 @@ var MapPage = (function () {
             _this.refreshMapFrameHeight();
             _this.initPluginMap();
             _this.initLogoButton();
+            _this.initOverlay();
+            _this.initDrawer();
             window.addEventListener('orientationchange', function () {
                 console.log('screen.orientation.type: ' + screen.orientation.type);
                 _this.refreshContentHeight();
                 _this.refreshMapFrameHeight();
                 _this.fadeLogoButton(_this.isPortrait(), true);
+                if (_this.isPortrait()) {
+                    if (_this.isDrawerOpen) {
+                        _this.openCloseDrawer(false);
+                    }
+                }
+                else {
+                    if (_this.isDrawerOpen) {
+                        _this.refreshOverlay(false);
+                    }
+                }
             });
         };
         this.refreshContentHeight = function () {
@@ -118,11 +130,11 @@ var MapPage = (function () {
             if (animate) {
                 if (fadeIn) {
                     console.log('fadeLogoButton called: Fade in, with animate');
-                    $('#logo-button').fadeIn('slow');
+                    $(_this.logoButton).fadeIn('slow');
                 }
                 else {
                     console.log('fadeLogoButton called: Fade out, with animate');
-                    $('#logo-button').fadeOut('slow');
+                    $(_this.logoButton).fadeOut('slow');
                 }
             }
             else {
@@ -140,11 +152,66 @@ var MapPage = (function () {
             console.log('isPortrait called!');
             return screen.orientation.type === 'portrait-primary' || screen.orientation.type === 'portrait-secondary';
         };
+        this.overlayOpacity = 0.7;
+        this.initOverlay = function () {
+            _this.overlay = document.getElementById('overlay');
+            _this.overlay.style.width = '0';
+        };
+        this.refreshOverlay = function (fadeIn) {
+            console.log('Fade in overlay: ' + fadeIn);
+            if (fadeIn) {
+                console.log('this.overlay.style.opacity: ' + _this.overlay.style.opacity);
+                if (_this.overlay.style.opacity == 0) {
+                    _this.overlay.style.width = '100%';
+                    $(_this.overlay).fadeTo('slow', _this.overlayOpacity);
+                }
+            }
+            else {
+                if (_this.overlay.style.opacity == _this.overlayOpacity) {
+                    $(_this.overlay).fadeTo('slow', 0, function () {
+                        _this.overlay.style.width = '0';
+                    });
+                }
+            }
+        };
+        this.initDrawer = function () {
+            _this.drawer = document.getElementById('drawer');
+            _this.isDrawerOpen = false;
+        };
+        this.openCloseDrawer = function (animate) {
+            if (_this.isPortrait()) {
+                _this.isDrawerOpen = !_this.isDrawerOpen;
+                console.log('isDrawerOpen: ' + _this.isDrawerOpen);
+                if (animate) {
+                    if (_this.isDrawerOpen) {
+                        $(_this.drawer).animate({ 'left': '0px' }, 'slow');
+                    }
+                    else {
+                        $(_this.drawer).animate({ 'left': '-240px' }, 'slow');
+                    }
+                }
+                else {
+                    if (_this.isDrawerOpen) {
+                        _this.drawer.style.left = '0px';
+                    }
+                    else {
+                        _this.drawer.style.left = '-240px';
+                    }
+                }
+                _this.refreshOverlay(_this.isDrawerOpen);
+            }
+        };
     }
     return MapPage;
 }());
 var onClickLogoButton = function () {
     console.log('Logo button clicked!');
+    mapPage.openCloseDrawer(true);
 };
-new MapPage().initialize();
+var onClickOverlay = function () {
+    console.log('Overlay clicked!');
+    mapPage.openCloseDrawer(true);
+};
+var mapPage = new MapPage();
+mapPage.initialize();
 //# sourceMappingURL=mapPage.js.map

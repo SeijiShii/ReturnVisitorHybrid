@@ -14,7 +14,7 @@
     }
 }
 
-#drawer-frame {
+#drawer {
     position: absolute;
     background: colors(colorLight);
     height: 100%;
@@ -64,4 +64,11 @@
     &:active {
         opacity: 0.5;
     }
+}
+
+#overlay {
+    width: 100%;
+    height: 100%;
+    background: colors(overlayGray);
+    opacity: 0;
 }
