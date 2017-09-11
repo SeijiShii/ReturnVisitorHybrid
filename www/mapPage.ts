@@ -1,4 +1,8 @@
 // 170906 次はロゴだ。
+//  やはりorientationで切り分けてドロワとロゴの挙動を決める必要がある。また明日。
+// 170907
+//  ロゴボタンの初期化 
+//  orientationで切り分ける。
 
 const LATITUDE: string = 'latitude';
 const LONGTUDE: string = 'longitude';
@@ -8,6 +12,7 @@ declare var device, google, plugin: any;
 interface Screen {
     orientation: any;
 }
+
 
 class MapPage {
 
@@ -29,6 +34,7 @@ class MapPage {
         this.refreshContentHeight();
         this.refreshMapFrameHeight();
         this.initPluginMap();
+        this.initLogoButton();
         // this.refreshMapHeight();
 
         window.addEventListener('orientationchange', () =>{
@@ -41,22 +47,11 @@ class MapPage {
             // 結果  console.log('window.orientation: ' + window.orientation);で取得するのはやめる。
             // なんでもwindow.orientationは標準化されていないとMDNに注意書きがされていた。
 
-            // 170906 以下はorientationによって切り分ける必要があるかと思って追加したが、
-            //      随時高さ計測なので現時点では不必要。
-            // switch (screen.orientation.type) {
-            //     case 'portrait-primary':
-            //     case 'portrait-secondary':
-            //         console.log('orientation: portrait')
-            //         break;
-
-            //     case 'landscape-primary':
-            //     case 'landscape-secondary':
-            //         console.log('orientation: landscape')
-            //         break;
-            // }
+            
             this.refreshContentHeight();
             this.refreshMapFrameHeight();
             // this.refreshMapHeight();
+            this.fadeLogoButton(this.isPortrait(), true);
         });
     }
 
@@ -78,15 +73,6 @@ class MapPage {
         mapFrame.style.height = this.contentHeight.toString() + 'px';
         console.log('map frame height: ' + mapFrame.style.height);
     }
-
-    // 170906 added
-    // 170906 cssで指定してあるから要らなくね？ってなった。
-    // refreshMapHeight = () => {
-    //     this.mapDiv.style.height = this.contentHeight.toString() + 'px';
-    //     // mapDiv.style.height = '100px';
-    //     // このコードがmapDivの高さに影響を与えているのか検証するために追加した
-    //     console.log('map div height: ' + this.mapDiv.style.height);
-    // }
 
     initPluginMap = () => {
         this.mapDiv = document.getElementById('map');
@@ -186,12 +172,45 @@ class MapPage {
         storage.setItem(CAMERA_ZOOM, position.zoom);
     }
 
+    private logoButton: any;
+    private initLogoButton = () => {
+        this.logoButton = document.getElementById('logo-button');
+        this.fadeLogoButton(this.isPortrait(), true);
+        
+    }
+
+    private fadeLogoButton = (fadeIn:boolean, animate: boolean) => {
+        if (animate) {
+            if (fadeIn) {
+                console.log('fadeLogoButton called: Fade in, with animate');    
+                // 170911 JQueryが読み込まれなくて何度もテストする  
+                // console.dir($);     
+
+                $('#logo-button').fadeIn('slow');
+            } else {
+                console.log('fadeLogoButton called: Fade out, with animate');                                
+                $('#logo-button').fadeOut('slow');
+            }
+        } else {
+            if (fadeIn) {
+                console.log('fadeLogoButton called: Fade in, No animate');
+                this.logoButton.style.opacity = 1;
+            } else {
+                console.log('fadeLogoButton called: Fade out, No animate');                
+                this.logoButton.style.opacity = 0;
+            }
+        }
+    }
+
+    private isPortrait = ():boolean => {
+        console.log('isPortrait called!')
+        return screen.orientation.type === 'portrait-primary' || screen.orientation.type === 'portrait-secondary'
+    }
     
 }
-
-new MapPage().initialize();
 
 const onClickLogoButton = () => {
     console.log('Logo button clicked!');
 }
 
+new MapPage().initialize();
