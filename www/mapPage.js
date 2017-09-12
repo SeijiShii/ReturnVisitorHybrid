@@ -15,45 +15,37 @@ var MapPage = (function () {
             _this.initLogoButton();
             _this.initOverlay();
             _this.initDrawer();
-            _this.refreshContentHeight();
-            _this.refreshMapFrameHeight();
-            _this.refreshDrawerHeight();
             window.addEventListener('resize', function () {
                 if (_this.resizeTimer !== false) {
                     clearTimeout(_this.resizeTimer);
                 }
                 _this.resizeTimer = setTimeout(function () {
                     console.log('Window resized!');
-                    _this.refreshContentHeight();
-                    _this.refreshMapFrameHeight();
+                    _this.refreshMapFrame();
                     _this.fadeLogoButton(!_this.isWideScreen(), true);
-                    if (!_this.isWideScreen()) {
-                        if (_this.isDrawerOpen) {
-                            _this.openCloseDrawer(false);
-                        }
-                    }
-                    else {
-                        if (_this.isDrawerOpen) {
-                            _this.refreshOverlay(false);
-                        }
-                    }
+                    _this.refreshDrawer();
+                    _this.refreshOverlay(false);
+                    console.log('Drawer logo left: ' + _this.drawerLogo.style.left.toString());
                 }, 200);
             });
         };
         this.isWideScreen = function () {
             return window.innerWidth >= MapPage.BREAK_POINT_WIDTH;
         };
-        this.refreshContentHeight = function () {
-            var contentFrame = document.getElementById('content-frame');
-            _this.contentHeight = window.innerHeight - 50;
-            console.log('content height: ' + _this.contentHeight + 'px');
-            contentFrame.style.height = _this.contentHeight.toString() + 'px';
-        };
-        this.refreshMapFrameHeight = function () {
-            _this.mapFrame.style.height = _this.contentHeight.toString() + 'px';
-        };
         this.initMapFrame = function () {
             _this.mapFrame = document.getElementById('map-frame');
+            _this.refreshMapFrame();
+        };
+        this.refreshMapFrame = function () {
+            _this.mapFrame.style.height = (window.innerHeight - 50) + 'px';
+            if (_this.isWideScreen()) {
+                _this.mapFrame.style.width = (window.innerWidth - MapPage.DRAWER_WIDTH) + 'px';
+                _this.mapFrame.style.left = MapPage.DRAWER_WIDTH + 'px';
+            }
+            else {
+                _this.mapFrame.style.width = window.innerWidth + 'px';
+                _this.mapFrame.style.left = '0';
+            }
         };
         this.initPluginMap = function () {
             _this.mapDiv = document.getElementById('map');
@@ -135,6 +127,7 @@ var MapPage = (function () {
         };
         this.initLogoButton = function () {
             _this.logoButton = document.getElementById('logo-button');
+            _this.logoButton.addEventListener('click', _this.openCloseDrawer);
             _this.fadeLogoButton(!_this.isWideScreen(), true);
         };
         this.fadeLogoButton = function (fadeIn, animate) {
@@ -163,6 +156,7 @@ var MapPage = (function () {
         this.initOverlay = function () {
             _this.overlay = document.getElementById('overlay');
             _this.overlay.style.width = '0';
+            _this.overlay.addEventListener('click', _this.openCloseDrawer);
         };
         this.refreshOverlay = function (fadeIn) {
             console.log('Fade in overlay: ' + fadeIn);
@@ -185,29 +179,26 @@ var MapPage = (function () {
             _this.drawer = document.getElementById('drawer');
             _this.isDrawerOpen = false;
             _this.initDrawerLogo();
+            _this.refreshDrawer();
         };
-        this.refreshDrawerHeight = function () {
-            _this.drawer.style.height = _this.contentHeight.toString + 'px';
+        this.refreshDrawer = function () {
+            _this.drawer.style.height = (window.innerHeight - 50) + 'px';
+            _this.isDrawerOpen = false;
+            if (_this.isWideScreen()) {
+                _this.drawer.style.left = '0';
+            }
+            else {
+                _this.drawer.style.left = '-' + MapPage.DRAWER_WIDTH + 'px';
+            }
         };
-        this.openCloseDrawer = function (animate) {
+        this.openCloseDrawer = function () {
             if (!_this.isWideScreen()) {
                 _this.isDrawerOpen = !_this.isDrawerOpen;
-                console.log('isDrawerOpen: ' + _this.isDrawerOpen);
-                if (animate) {
-                    if (_this.isDrawerOpen) {
-                        $(_this.drawer).animate({ 'left': '0px' }, 'slow');
-                    }
-                    else {
-                        $(_this.drawer).animate({ 'left': '-240px' }, 'slow');
-                    }
+                if (_this.isDrawerOpen) {
+                    $(_this.drawer).animate({ 'left': '0px' }, 'slow');
                 }
                 else {
-                    if (_this.isDrawerOpen) {
-                        _this.drawer.style.left = '0px';
-                    }
-                    else {
-                        _this.drawer.style.left = '-240px';
-                    }
+                    $(_this.drawer).animate({ 'left': '-240px' }, 'slow');
                 }
                 _this.refreshOverlay(_this.isDrawerOpen);
             }
@@ -216,22 +207,14 @@ var MapPage = (function () {
             _this.drawerLogo = document.getElementById('drawer-logo');
             _this.drawerLogo.addEventListener('click', function () {
                 if (!_this.isWideScreen()) {
-                    _this.openCloseDrawer(true);
+                    _this.openCloseDrawer();
                 }
             });
         };
     }
     MapPage.BREAK_POINT_WIDTH = 400;
+    MapPage.DRAWER_WIDTH = 240;
     return MapPage;
 }());
-var onClickLogoButton = function () {
-    console.log('Logo button clicked!');
-    mapPage.openCloseDrawer(true);
-};
-var onClickOverlay = function () {
-    console.log('Overlay clicked!');
-    mapPage.openCloseDrawer(true);
-};
-var mapPage = new MapPage();
-mapPage.initialize();
+new MapPage().initialize();
 //# sourceMappingURL=mapPage.js.map

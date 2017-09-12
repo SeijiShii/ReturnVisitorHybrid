@@ -9,16 +9,13 @@ const LONGTUDE: string = 'longitude';
 const CAMERA_ZOOM: string = 'camera_zoom';
 
 declare var device, google, plugin: any;
-interface Screen {
-    orientation: any;
-}
-
 
 class MapPage {
 
     static BREAK_POINT_WIDTH = 400; 
+    static DRAWER_WIDTH = 240;
 
-    private contentHeight: number;
+    // private contentHeight: number;
     
 
     initialize = () => {
@@ -36,30 +33,21 @@ class MapPage {
         this.initOverlay();
         this.initDrawer();
 
-        this.refreshContentHeight();
-        this.refreshMapFrameHeight();
-        this.refreshDrawerHeight();
-        
         window.addEventListener('resize', () => {
             if (this.resizeTimer !== false) {
                 clearTimeout(this.resizeTimer);
             }
             this.resizeTimer = setTimeout(() => {
                 console.log('Window resized!');  
-                this.refreshContentHeight();
-                this.refreshMapFrameHeight();
+                // this.refreshContentHeight();
+                this.refreshMapFrame();
                 this.fadeLogoButton(!this.isWideScreen(), true);
     
-                if (!this.isWideScreen()) {
-                    if (this.isDrawerOpen) {
-                        this.openCloseDrawer(false);                    
-                    }
-                } else {
-                    if (this.isDrawerOpen) {
-                        // ドロワの開いた状態で画面が回転した。
-                        this.refreshOverlay(false);
-                    }
-                }              
+                this.refreshDrawer();
+                this.refreshOverlay(false);
+
+                console.log('Drawer logo left: ' + this.drawerLogo.style.left.toString());
+                
             }, 200);
         });
     }
@@ -68,26 +56,23 @@ class MapPage {
         return window.innerWidth >= MapPage.BREAK_POINT_WIDTH;
     }
     
-    refreshContentHeight = () => {
-        let contentFrame = document.getElementById('content-frame');
-        // console.log('window.innerHeight(): ' + window.innerHeight);
-        this.contentHeight = window.innerHeight - 50;
-        // 170906 当初 contentHeight = window.screen.heightで高さを取得しようとしたら
-        //   Androidでステータスバーの高さを見落としていた。
-        //   contentHeight = window.innerHeight - 50 でwebViewの高さが取得できるが、
-        //   iOSではどのような挙動になるか確認する必要がある。
-        console.log('content height: ' + this.contentHeight + 'px');
-        contentFrame.style.height = this.contentHeight.toString() + 'px'; 
-    }
-
-    refreshMapFrameHeight = () => {
-        this.mapFrame.style.height = this.contentHeight.toString() + 'px';
-        // console.log('map frame height: ' + mapFrame.style.height);
-    }
-
     private mapFrame: any;
     private initMapFrame = () => {
         this.mapFrame = document.getElementById('map-frame');
+        this.refreshMapFrame();
+    }
+
+    refreshMapFrame = () => {
+        this.mapFrame.style.height = (window.innerHeight - 50) + 'px';
+        // console.log('map frame height: ' + mapFrame.style.height);
+
+        if (this.isWideScreen()) {
+            this.mapFrame.style.width = (window.innerWidth - MapPage.DRAWER_WIDTH) + 'px';
+            this.mapFrame.style.left = MapPage.DRAWER_WIDTH + 'px';
+        } else {
+            this.mapFrame.style.width = window.innerWidth + 'px';
+            this.mapFrame.style.left = '0';
+        }
     }
 
     private mapDiv: any;
@@ -126,7 +111,6 @@ class MapPage {
                     let location = this.pluginMap.getMyLocation({
                     enableHighAccuracy : true
                 }, (result) => {
-                    // console.dir(JSON.stringify(result));
 
                     this.pluginMap.setOptions({
                         'camera' : {
@@ -191,6 +175,7 @@ class MapPage {
     private logoButton: any;
     private initLogoButton = () => {
         this.logoButton = document.getElementById('logo-button');
+        this.logoButton.addEventListener('click', this.openCloseDrawer);
         this.fadeLogoButton(!this.isWideScreen(), true);
         
     }
@@ -223,6 +208,7 @@ class MapPage {
     private initOverlay = () => {
         this.overlay = document.getElementById('overlay');
         this.overlay.style.width = '0';
+        this.overlay.addEventListener('click', this.openCloseDrawer);
     }
     
     private refreshOverlay = (fadeIn: boolean) => {
@@ -249,32 +235,33 @@ class MapPage {
         this.isDrawerOpen = false;
 
         this.initDrawerLogo();
+        this.refreshDrawer();
+
     }
 
-    private refreshDrawerHeight = () => {
-        this.drawer.style.height = this.contentHeight.toString + 'px';
+    private refreshDrawer = () => {
+        this.drawer.style.height = (window.innerHeight - 50) + 'px';
+        this.isDrawerOpen = false;
+        // console.log('Refresh drawer height! ' + this.drawer.style.height.toString());
+        if (this.isWideScreen()) {
+            this.drawer.style.left = '0';
+        } else {
+            this.drawer.style.left = '-' + MapPage.DRAWER_WIDTH + 'px';
+        }
     }
 
-    openCloseDrawer = (animate: boolean) => {
+    openCloseDrawer = () => {
         // ポートレイトの時だけ有効
         if (!this.isWideScreen()) {
 
             this.isDrawerOpen = !this.isDrawerOpen;
-            console.log('isDrawerOpen: ' + this.isDrawerOpen);
-
-            if (animate) {
-                if (this.isDrawerOpen) {
-                    $(this.drawer).animate({'left' : '0px'}, 'slow');
-                } else {
-                    $(this.drawer).animate({'left' : '-240px'}, 'slow');
-                }    
+            // console.log('isDrawerOpen: ' + this.isDrawerOpen);
+            if (this.isDrawerOpen) {
+                $(this.drawer).animate({'left' : '0px'}, 'slow');
             } else {
-                if (this.isDrawerOpen) {
-                    this.drawer.style.left = '0px';
-                } else {
-                    this.drawer.style.left = '-240px';
-                }
+                $(this.drawer).animate({'left' : '-240px'}, 'slow');
             }
+
             this.refreshOverlay(this.isDrawerOpen);
         }
     }
@@ -284,21 +271,10 @@ class MapPage {
         this.drawerLogo = document.getElementById('drawer-logo');
         this.drawerLogo.addEventListener('click', () => {
             if (!this.isWideScreen()) {
-                this.openCloseDrawer(true);
+                this.openCloseDrawer();
             }
         });
     }
 }
 
-const onClickLogoButton = () => {
-    console.log('Logo button clicked!');
-    mapPage.openCloseDrawer(true);
-}
-
-const onClickOverlay = () => {
-    console.log('Overlay clicked!');
-    mapPage.openCloseDrawer(true);
-}
-
-const mapPage = new MapPage()
-mapPage.initialize();
+new MapPage().initialize();
