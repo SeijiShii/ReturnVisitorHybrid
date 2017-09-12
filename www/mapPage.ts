@@ -16,11 +16,9 @@ interface Screen {
 
 class MapPage {
 
-    static browserMap: any; 
-    static pluginMap: any; 
+    static BREAK_POINT_WIDTH = 400; 
 
     private contentHeight: number;
-    private mapDiv: any;
     
 
     initialize = () => {
@@ -28,45 +26,47 @@ class MapPage {
         document.addEventListener('deviceready', this.onDeviceReady, false);
     }
 
+    private resizeTimer: any;
     onDeviceReady = () => {
         console.log('Platform: ' + device.platform);
 
-        this.refreshContentHeight();
-        this.refreshMapFrameHeight();
+        this.initMapFrame();
         this.initPluginMap();
         this.initLogoButton();
         this.initOverlay();
         this.initDrawer();
 
-        window.addEventListener('orientationchange', () =>{
-            
-            console.log('screen.orientation.type: ' + screen.orientation.type); 
-            // 170906 
-            // 当初、screen.orientation.typeでorientationを取得しようとすると
-            //  そのようなプロパティは存在しないと怒られる。
-            // interfaceでScreenにorientationを追加するとコンパイラの怒りが静まる。
-            // 結果  console.log('window.orientation: ' + window.orientation);で取得するのはやめる。
-            // なんでもwindow.orientationは標準化されていないとMDNに注意書きがされていた。
-
-            
-            this.refreshContentHeight();
-            this.refreshMapFrameHeight();
-            // this.refreshMapHeight();
-            this.fadeLogoButton(this.isPortrait(), true);
-
-            if (this.isPortrait()) {
-                if (this.isDrawerOpen) {
-                    this.openCloseDrawer(false);                    
-                }
-            } else {
-                if (this.isDrawerOpen) {
-                    // ドロワの開いた状態で画面が回転した。
-                    this.refreshOverlay(false);
-                }
+        this.refreshContentHeight();
+        this.refreshMapFrameHeight();
+        this.refreshDrawerHeight();
+        
+        window.addEventListener('resize', () => {
+            if (this.resizeTimer !== false) {
+                clearTimeout(this.resizeTimer);
             }
+            this.resizeTimer = setTimeout(() => {
+                console.log('Window resized!');  
+                this.refreshContentHeight();
+                this.refreshMapFrameHeight();
+                this.fadeLogoButton(!this.isWideScreen(), true);
+    
+                if (!this.isWideScreen()) {
+                    if (this.isDrawerOpen) {
+                        this.openCloseDrawer(false);                    
+                    }
+                } else {
+                    if (this.isDrawerOpen) {
+                        // ドロワの開いた状態で画面が回転した。
+                        this.refreshOverlay(false);
+                    }
+                }              
+            }, 200);
         });
     }
 
+    private isWideScreen = ():boolean => {
+        return window.innerWidth >= MapPage.BREAK_POINT_WIDTH;
+    }
     
     refreshContentHeight = () => {
         let contentFrame = document.getElementById('content-frame');
@@ -81,12 +81,18 @@ class MapPage {
     }
 
     refreshMapFrameHeight = () => {
-        let mapFrame = document.getElementById('map-frame');
-        mapFrame.style.height = this.contentHeight.toString() + 'px';
-        console.log('map frame height: ' + mapFrame.style.height);
+        this.mapFrame.style.height = this.contentHeight.toString() + 'px';
+        // console.log('map frame height: ' + mapFrame.style.height);
     }
 
-    initPluginMap = () => {
+    private mapFrame: any;
+    private initMapFrame = () => {
+        this.mapFrame = document.getElementById('map-frame');
+    }
+
+    private mapDiv: any;
+    private pluginMap: any;
+    private initPluginMap = () => {
         this.mapDiv = document.getElementById('map');
 
         let position = this.loadCameraPosition();
@@ -113,18 +119,16 @@ class MapPage {
             }
         }
 
-        MapPage.pluginMap = plugin.google.maps.Map.getMap(this.mapDiv, option);
-        
-        
-        MapPage.pluginMap.on(plugin.google.maps.event.MAP_READY, () => {
+        this.pluginMap = plugin.google.maps.Map.getMap(this.mapDiv, option);
+        this.pluginMap.on(plugin.google.maps.event.MAP_READY, () => {
 
             if (!position) {
-                    let location = MapPage.pluginMap.getMyLocation({
+                    let location = this.pluginMap.getMyLocation({
                     enableHighAccuracy : true
                 }, (result) => {
                     // console.dir(JSON.stringify(result));
 
-                    MapPage.pluginMap.setOptions({
+                    this.pluginMap.setOptions({
                         'camera' : {
                             'target' : {
                                 lat: result.latLng.lat,
@@ -140,16 +144,16 @@ class MapPage {
             }
         });
 
-        MapPage.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, () =>{
+        this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, () =>{
             // console.log('Camera move ended.')
-            let cameraPosition = MapPage.pluginMap.getCameraPosition();
+            let cameraPosition = this.pluginMap.getCameraPosition();
             // console.log(JSON.stringify(cameraPosition.target));
             this.saveCameraPosition(cameraPosition);
             
         });
     }
 
-    loadCameraPosition = () : any => {
+    private loadCameraPosition = () : any => {
         
         let storage = window.localStorage;
 
@@ -177,7 +181,7 @@ class MapPage {
         }
     }
 
-    saveCameraPosition = (position : any) => {
+    private saveCameraPosition = (position : any) => {
         let storage = window.localStorage;
         storage.setItem(LATITUDE, position.target.lat);
         storage.setItem(LONGTUDE, position.target.lng);
@@ -187,7 +191,7 @@ class MapPage {
     private logoButton: any;
     private initLogoButton = () => {
         this.logoButton = document.getElementById('logo-button');
-        this.fadeLogoButton(this.isPortrait(), true);
+        this.fadeLogoButton(!this.isWideScreen(), true);
         
     }
 
@@ -212,11 +216,6 @@ class MapPage {
                 this.logoButton.style.opacity = 0;
             }
         }
-    }
-
-    private isPortrait = ():boolean => {
-        console.log('isPortrait called!')
-        return screen.orientation.type === 'portrait-primary' || screen.orientation.type === 'portrait-secondary'
     }
 
     private overlay: any;
@@ -248,11 +247,17 @@ class MapPage {
     private initDrawer = () => {
         this.drawer = document.getElementById('drawer');
         this.isDrawerOpen = false;
+
+        this.initDrawerLogo();
+    }
+
+    private refreshDrawerHeight = () => {
+        this.drawer.style.height = this.contentHeight.toString + 'px';
     }
 
     openCloseDrawer = (animate: boolean) => {
         // ポートレイトの時だけ有効
-        if (this.isPortrait()) {
+        if (!this.isWideScreen()) {
 
             this.isDrawerOpen = !this.isDrawerOpen;
             console.log('isDrawerOpen: ' + this.isDrawerOpen);
@@ -274,6 +279,15 @@ class MapPage {
         }
     }
 
+    private drawerLogo : any;
+    private initDrawerLogo = () => {
+        this.drawerLogo = document.getElementById('drawer-logo');
+        this.drawerLogo.addEventListener('click', () => {
+            if (!this.isWideScreen()) {
+                this.openCloseDrawer(true);
+            }
+        });
+    }
 }
 
 const onClickLogoButton = () => {

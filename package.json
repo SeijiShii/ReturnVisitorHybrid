@@ -20,7 +20,6 @@
         "cordova-plugin-browsersync": "^0.1.6",
         "cordova-plugin-device": "^1.1.6",
         "cordova-plugin-googlemaps": "git+https://github.com/mapsplugin/cordova-plugin-googlemaps.git#multiple_maps",
-        "cordova-plugin-screen-orientation": "^2.0.1",
         "cordova-plugin-whitelist": "^1.3.2",
         "es6-promise-plugin": "git+https://github.com/vstirbu/PromisesPlugin.git",
         "jquery": "^3.2.1"
@@ -36,8 +35,7 @@
                 "API_KEY_FOR_IOS": "AIzaSyBznK0j12RNqTrrj4iIiFG7sqKGaGhYWHo",
                 "LOCATION_WHEN_IN_USE_DESCRIPTION": "Show your location on the map",
                 "LOCATION_ALWAYS_USAGE_DESCRIPTION": "Trace your location on the map"
-            },
-            "cordova-plugin-screen-orientation": {}
+            }
         },
         "platforms": [
             "android",

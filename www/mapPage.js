@@ -10,28 +10,38 @@ var MapPage = (function () {
         };
         this.onDeviceReady = function () {
             console.log('Platform: ' + device.platform);
-            _this.refreshContentHeight();
-            _this.refreshMapFrameHeight();
+            _this.initMapFrame();
             _this.initPluginMap();
             _this.initLogoButton();
             _this.initOverlay();
             _this.initDrawer();
-            window.addEventListener('orientationchange', function () {
-                console.log('screen.orientation.type: ' + screen.orientation.type);
-                _this.refreshContentHeight();
-                _this.refreshMapFrameHeight();
-                _this.fadeLogoButton(_this.isPortrait(), true);
-                if (_this.isPortrait()) {
-                    if (_this.isDrawerOpen) {
-                        _this.openCloseDrawer(false);
-                    }
+            _this.refreshContentHeight();
+            _this.refreshMapFrameHeight();
+            _this.refreshDrawerHeight();
+            window.addEventListener('resize', function () {
+                if (_this.resizeTimer !== false) {
+                    clearTimeout(_this.resizeTimer);
                 }
-                else {
-                    if (_this.isDrawerOpen) {
-                        _this.refreshOverlay(false);
+                _this.resizeTimer = setTimeout(function () {
+                    console.log('Window resized!');
+                    _this.refreshContentHeight();
+                    _this.refreshMapFrameHeight();
+                    _this.fadeLogoButton(!_this.isWideScreen(), true);
+                    if (!_this.isWideScreen()) {
+                        if (_this.isDrawerOpen) {
+                            _this.openCloseDrawer(false);
+                        }
                     }
-                }
+                    else {
+                        if (_this.isDrawerOpen) {
+                            _this.refreshOverlay(false);
+                        }
+                    }
+                }, 200);
             });
+        };
+        this.isWideScreen = function () {
+            return window.innerWidth >= MapPage.BREAK_POINT_WIDTH;
         };
         this.refreshContentHeight = function () {
             var contentFrame = document.getElementById('content-frame');
@@ -40,9 +50,10 @@ var MapPage = (function () {
             contentFrame.style.height = _this.contentHeight.toString() + 'px';
         };
         this.refreshMapFrameHeight = function () {
-            var mapFrame = document.getElementById('map-frame');
-            mapFrame.style.height = _this.contentHeight.toString() + 'px';
-            console.log('map frame height: ' + mapFrame.style.height);
+            _this.mapFrame.style.height = _this.contentHeight.toString() + 'px';
+        };
+        this.initMapFrame = function () {
+            _this.mapFrame = document.getElementById('map-frame');
         };
         this.initPluginMap = function () {
             _this.mapDiv = document.getElementById('map');
@@ -69,13 +80,13 @@ var MapPage = (function () {
                     'zoom': position.zoom
                 };
             }
-            MapPage.pluginMap = plugin.google.maps.Map.getMap(_this.mapDiv, option);
-            MapPage.pluginMap.on(plugin.google.maps.event.MAP_READY, function () {
+            _this.pluginMap = plugin.google.maps.Map.getMap(_this.mapDiv, option);
+            _this.pluginMap.on(plugin.google.maps.event.MAP_READY, function () {
                 if (!position) {
-                    var location_1 = MapPage.pluginMap.getMyLocation({
+                    var location_1 = _this.pluginMap.getMyLocation({
                         enableHighAccuracy: true
                     }, function (result) {
-                        MapPage.pluginMap.setOptions({
+                        _this.pluginMap.setOptions({
                             'camera': {
                                 'target': {
                                     lat: result.latLng.lat,
@@ -89,8 +100,8 @@ var MapPage = (function () {
                     });
                 }
             });
-            MapPage.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
-                var cameraPosition = MapPage.pluginMap.getCameraPosition();
+            _this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
+                var cameraPosition = _this.pluginMap.getCameraPosition();
                 _this.saveCameraPosition(cameraPosition);
             });
         };
@@ -124,7 +135,7 @@ var MapPage = (function () {
         };
         this.initLogoButton = function () {
             _this.logoButton = document.getElementById('logo-button');
-            _this.fadeLogoButton(_this.isPortrait(), true);
+            _this.fadeLogoButton(!_this.isWideScreen(), true);
         };
         this.fadeLogoButton = function (fadeIn, animate) {
             if (animate) {
@@ -147,10 +158,6 @@ var MapPage = (function () {
                     _this.logoButton.style.opacity = 0;
                 }
             }
-        };
-        this.isPortrait = function () {
-            console.log('isPortrait called!');
-            return screen.orientation.type === 'portrait-primary' || screen.orientation.type === 'portrait-secondary';
         };
         this.overlayOpacity = 0.7;
         this.initOverlay = function () {
@@ -177,9 +184,13 @@ var MapPage = (function () {
         this.initDrawer = function () {
             _this.drawer = document.getElementById('drawer');
             _this.isDrawerOpen = false;
+            _this.initDrawerLogo();
+        };
+        this.refreshDrawerHeight = function () {
+            _this.drawer.style.height = _this.contentHeight.toString + 'px';
         };
         this.openCloseDrawer = function (animate) {
-            if (_this.isPortrait()) {
+            if (!_this.isWideScreen()) {
                 _this.isDrawerOpen = !_this.isDrawerOpen;
                 console.log('isDrawerOpen: ' + _this.isDrawerOpen);
                 if (animate) {
@@ -201,7 +212,16 @@ var MapPage = (function () {
                 _this.refreshOverlay(_this.isDrawerOpen);
             }
         };
+        this.initDrawerLogo = function () {
+            _this.drawerLogo = document.getElementById('drawer-logo');
+            _this.drawerLogo.addEventListener('click', function () {
+                if (!_this.isWideScreen()) {
+                    _this.openCloseDrawer(true);
+                }
+            });
+        };
     }
+    MapPage.BREAK_POINT_WIDTH = 400;
     return MapPage;
 }());
 var onClickLogoButton = function () {
