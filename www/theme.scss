@@ -5,6 +5,7 @@
 html, body {
     position: relative;
     height: 100%;
+    -webkit-user-select: none;
 }
 
 #content-frame {

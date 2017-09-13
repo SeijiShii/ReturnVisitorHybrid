@@ -1,9 +1,15 @@
+// 170906 次はロゴだ。
+//  やはりorientationで切り分けてドロワとロゴの挙動を決める必要がある。また明日。
+// 170907
+//  ロゴボタンの初期化 
+//  orientationで切り分ける。
 var LATITUDE = 'latitude';
 var LONGTUDE = 'longitude';
 var CAMERA_ZOOM = 'camera_zoom';
-var MapPage = (function () {
+var MapPage = /** @class */ (function () {
     function MapPage() {
         var _this = this;
+        // private contentHeight: number;
         this.initialize = function () {
             console.log('initialize called!');
             document.addEventListener('deviceready', _this.onDeviceReady, false);
@@ -15,17 +21,20 @@ var MapPage = (function () {
             _this.initLogoButton();
             _this.initOverlay();
             _this.initDrawer();
+            _this.initLognClickDialog();
+            _this.fadeLongClickDialog(true);
             window.addEventListener('resize', function () {
                 if (_this.resizeTimer !== false) {
                     clearTimeout(_this.resizeTimer);
                 }
                 _this.resizeTimer = setTimeout(function () {
                     console.log('Window resized!');
+                    // this.refreshContentHeight();
                     _this.refreshMapFrame();
                     _this.fadeLogoButton(!_this.isWideScreen(), true);
                     _this.refreshDrawer();
                     _this.refreshOverlay(false);
-                    console.log('Drawer logo left: ' + _this.drawerLogo.style.left.toString());
+                    // console.log('Drawer logo left: ' + this.drawerLogo.style.left.toString());
                 }, 200);
             });
         };
@@ -38,6 +47,7 @@ var MapPage = (function () {
         };
         this.refreshMapFrame = function () {
             _this.mapFrame.style.height = (window.innerHeight - 50) + 'px';
+            // console.log('map frame height: ' + mapFrame.style.height);
             if (_this.isWideScreen()) {
                 _this.mapFrame.style.width = (window.innerWidth - MapPage.DRAWER_WIDTH) + 'px';
                 _this.mapFrame.style.left = MapPage.DRAWER_WIDTH + 'px';
@@ -93,8 +103,24 @@ var MapPage = (function () {
                 }
             });
             _this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, function () {
+                // console.log('Camera move ended.')
                 var cameraPosition = _this.pluginMap.getCameraPosition();
+                // console.log(JSON.stringify(cameraPosition.target));
                 _this.saveCameraPosition(cameraPosition);
+            });
+            _this.pluginMap.on(plugin.google.maps.event.MAP_LONG_CLICK, function (latLng) {
+                // console.log('On map long click!')
+                // console.dir(latLng);
+                // long click地点へカメラ移動
+                _this.pluginMap.animateCamera({
+                    target: {
+                        lat: latLng.lat,
+                        lng: latLng.lng
+                    },
+                    duration: 300
+                });
+                // 操作選択ダイアログ
+                _this.fadeLongClickDialog(true);
             });
         };
         this.loadCameraPosition = function () {
@@ -134,6 +160,8 @@ var MapPage = (function () {
             if (animate) {
                 if (fadeIn) {
                     console.log('fadeLogoButton called: Fade in, with animate');
+                    // 170911 JQueryが読み込まれなくて何度もテストする  
+                    // console.dir($);     
                     $(_this.logoButton).fadeIn('slow');
                 }
                 else {
@@ -152,16 +180,23 @@ var MapPage = (function () {
                 }
             }
         };
-        this.overlayOpacity = 0.7;
+        this.overlayOpacity = 0.8;
         this.initOverlay = function () {
             _this.overlay = document.getElementById('overlay');
             _this.overlay.style.width = '0';
-            _this.overlay.addEventListener('click', _this.openCloseDrawer);
+            _this.overlay.addEventListener('click', function () {
+                if (_this.isDrawerOpen) {
+                    _this.openCloseDrawer();
+                }
+                else if (_this.showLongClickDialog) {
+                    _this.fadeLongClickDialog(false);
+                }
+            });
         };
         this.refreshOverlay = function (fadeIn) {
             console.log('Fade in overlay: ' + fadeIn);
             if (fadeIn) {
-                console.log('this.overlay.style.opacity: ' + _this.overlay.style.opacity);
+                // console.log('this.overlay.style.opacity: ' + this.overlay.style.opacity)
                 if (_this.overlay.style.opacity == 0) {
                     _this.overlay.style.width = '100%';
                     $(_this.overlay).fadeTo('slow', _this.overlayOpacity);
@@ -184,6 +219,7 @@ var MapPage = (function () {
         this.refreshDrawer = function () {
             _this.drawer.style.height = (window.innerHeight - 50) + 'px';
             _this.isDrawerOpen = false;
+            // console.log('Refresh drawer height! ' + this.drawer.style.height.toString());
             if (_this.isWideScreen()) {
                 _this.drawer.style.left = '0';
             }
@@ -192,8 +228,10 @@ var MapPage = (function () {
             }
         };
         this.openCloseDrawer = function () {
+            // ポートレイトの時だけ有効
             if (!_this.isWideScreen()) {
                 _this.isDrawerOpen = !_this.isDrawerOpen;
+                // console.log('isDrawerOpen: ' + this.isDrawerOpen);
                 if (_this.isDrawerOpen) {
                     $(_this.drawer).animate({ 'left': '0px' }, 'slow');
                 }
@@ -210,6 +248,22 @@ var MapPage = (function () {
                     _this.openCloseDrawer();
                 }
             });
+        };
+        this.initLognClickDialog = function () {
+            _this.longClickDialog = document.getElementById('on-map-long-click-dialog');
+        };
+        this.fadeLongClickDialog = function (fadeIn) {
+            if (fadeIn) {
+                // console.log('Fade in long click dialog!')
+                $(_this.longClickDialog).fadeIn('slow');
+                _this.showLongClickDialog = true;
+                _this.refreshOverlay(true);
+            }
+            else {
+                $(_this.longClickDialog).fadeOut('slow');
+                _this.showLongClickDialog = false;
+                _this.refreshOverlay(false);
+            }
         };
     }
     MapPage.BREAK_POINT_WIDTH = 400;

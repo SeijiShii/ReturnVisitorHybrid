@@ -32,6 +32,9 @@ class MapPage {
         this.initLogoButton();
         this.initOverlay();
         this.initDrawer();
+        this.initLognClickDialog();
+
+        this.fadeLongClickDialog(true);
 
         window.addEventListener('resize', () => {
             if (this.resizeTimer !== false) {
@@ -46,7 +49,7 @@ class MapPage {
                 this.refreshDrawer();
                 this.refreshOverlay(false);
 
-                console.log('Drawer logo left: ' + this.drawerLogo.style.left.toString());
+                // console.log('Drawer logo left: ' + this.drawerLogo.style.left.toString());
                 
             }, 200);
         });
@@ -126,6 +129,7 @@ class MapPage {
                     console.log(JSON.stringify(err_msg));
                 });
             }
+
         });
 
         this.pluginMap.on(plugin.google.maps.event.CAMERA_MOVE_END, () =>{
@@ -134,6 +138,26 @@ class MapPage {
             // console.log(JSON.stringify(cameraPosition.target));
             this.saveCameraPosition(cameraPosition);
             
+        });
+
+        this.pluginMap.on(plugin.google.maps.event.MAP_LONG_CLICK, (latLng) => {
+            // console.log('On map long click!')
+            // console.dir(latLng);
+
+            // long click地点へカメラ移動
+            this.pluginMap.animateCamera(
+                {
+                    target: {
+                        lat: latLng.lat,
+                        lng: latLng.lng
+                    },
+                    duration: 300
+                }
+            )
+
+            // 操作選択ダイアログ
+            this.fadeLongClickDialog(true);
+
         });
     }
 
@@ -204,17 +228,23 @@ class MapPage {
     }
 
     private overlay: any;
-    private overlayOpacity: number = 0.7; 
+    private overlayOpacity: number = 0.8; 
     private initOverlay = () => {
         this.overlay = document.getElementById('overlay');
         this.overlay.style.width = '0';
-        this.overlay.addEventListener('click', this.openCloseDrawer);
+        this.overlay.addEventListener('click', () => {
+            if (this.isDrawerOpen) {
+                this.openCloseDrawer();
+            } else if (this.showLongClickDialog) {
+                this.fadeLongClickDialog(false);
+            }
+        });
     }
     
     private refreshOverlay = (fadeIn: boolean) => {
         console.log('Fade in overlay: ' + fadeIn);
         if (fadeIn) {
-            console.log('this.overlay.style.opacity: ' + this.overlay.style.opacity)
+            // console.log('this.overlay.style.opacity: ' + this.overlay.style.opacity)
             if (this.overlay.style.opacity == 0) {
                 this.overlay.style.width = '100%';
                 $(this.overlay).fadeTo('slow', this.overlayOpacity);
@@ -275,6 +305,25 @@ class MapPage {
             }
         });
     }
+
+    private longClickDialog: any;
+    private initLognClickDialog = () => {
+        this.longClickDialog = document.getElementById('on-map-long-click-dialog');
+    }
+
+    private showLongClickDialog: boolean;
+    private fadeLongClickDialog = (fadeIn: boolean) => {
+        if (fadeIn) {
+            // console.log('Fade in long click dialog!')
+            $(this.longClickDialog).fadeIn('slow');
+            this.showLongClickDialog = true;
+            this.refreshOverlay(true);
+        } else {
+            $(this.longClickDialog).fadeOut('slow');
+            this.showLongClickDialog = false;
+            this.refreshOverlay(false);
+        }
+    } 
 }
 
 new MapPage().initialize();
